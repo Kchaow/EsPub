@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  postgres:
+    container_name: epub_postgres
+    build: ./
+    ports:
+     - '5432:5432'
