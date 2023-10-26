@@ -1,5 +1,7 @@
 package com.espub.service;
 
+import java.nio.file.NoSuchFileException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +25,16 @@ public class EssayEditorService
 	{
 		try 
 		{
+			if (!essayDao.existsById(id))
+				throw new NoSuchFileException(String.format("Element with %d id doesn't exist", id));
 			essayDao.deleteById(id);
 			return new ResponseEntity<String>("success", HttpStatus.OK);
 		}
-		catch (Exception e)
+		catch (NoSuchFileException e)
 		{
 			e.printStackTrace();
+			return new ResponseEntity<String>(String.format("Element with %d id doesn't exist", id), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<String>("failed", HttpStatus.BAD_REQUEST);
 	}
 	public ResponseEntity<String> updateEssay(Essay essay)
 	{
