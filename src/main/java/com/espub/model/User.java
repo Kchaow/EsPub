@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "\"user\"")
 @PrimaryKeyJoinColumn(name="\"user\"")
+@Builder
 public class User 
 {
 	@Id

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Essay
 {
 	@Id
@@ -23,7 +25,6 @@ public class Essay
 	private String content;
 	private Calendar publicationDate;
 	@OneToOne
-	//@Column(name="\"user\"")
 	private User user;
 	private Calendar modificationDate;	
 	
