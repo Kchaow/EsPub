@@ -6,7 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +24,7 @@ public class Essay
 	private Integer id;
 	private String content;
 	private Calendar publicationDate;
-	@OneToOne
+	@ManyToOne
 	private User user;
-	private Calendar modificationDate;	
-	
+	private Calendar modificationDate;
 }
