@@ -300,7 +300,7 @@ public class DatabaseTests
 			user = User.builder()
 					.password("password")
 					.salt("salt")
-					.login("login")
+					.username("login")
 					.profileImage("image")
 					.status("status")
 					.description("description")
@@ -320,10 +320,10 @@ public class DatabaseTests
 			User created = userDao.save(user);
 			int id = created.getId();
 			String newValue = "Another name";
-			user.setLogin(newValue);
+			user.setUsername(newValue);
 			userDao.save(user);
 			
-			assertEquals(userDao.findById(id).get().getLogin(), newValue);
+			assertEquals(userDao.findById(id).get().getUsername(), newValue);
 		}
 		@Test
 		void findByIdRowShouldNotBeNull()
