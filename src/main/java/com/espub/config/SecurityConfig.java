@@ -39,14 +39,19 @@ public class SecurityConfig
 	{
 		http
 			.authorizeHttpRequests((authorize) -> authorize
-					.requestMatchers("/essay/edit/**").hasRole("admin")
-					//.requestMatchers("").authenticated()
-					.requestMatchers("/**").permitAll()
+					.requestMatchers("/essay/**").authenticated()
+					//.requestMatchers("/**").authenticated()
+					.requestMatchers("/register").permitAll()
+					.requestMatchers("/authenticate").permitAll()
 					)
 			.sessionManagement((sessionManagement) -> sessionManagement
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authenticationProvider(authenticationProvider())
+			//.formLogin((x) -> x.disable())
+			.csrf((x)->x.disable())
+			//.addFilter(jwtAuthFilter);
 			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+			
 		return http.build();
 	}
 	

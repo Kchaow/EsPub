@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.espub.dao.RoleDao;
 import com.espub.dao.UserDao;
 import com.espub.dto.AuthenticationRequest;
 import com.espub.dto.AuthenticationResponse;
@@ -25,6 +26,8 @@ public class AuthenticationService
 	@Autowired
 	private UserDao userDao;
 	@Autowired
+	private RoleDao roleDao;
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private JwtService jwtService;
@@ -38,6 +41,7 @@ public class AuthenticationService
 				.build();
 		List<Role> list = new ArrayList<>();
 		list.add(role);
+		roleDao.save(role);
 		User user = User.builder()
 				.username(registerRequest.getUsername())
 				.password(passwordEncoder.encode(registerRequest.getPassword()))
