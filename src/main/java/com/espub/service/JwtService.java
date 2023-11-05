@@ -1,13 +1,14 @@
 package com.espub.service;
 
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +16,24 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class JwtService {
 	
-	private final static String SECRET_KEY = "7c8d4b5bb5f4efe8aab6aeb7c301baae27c9c8b05ca7946439b5e21eb2d12750";
+	@Value("${jwt.token.secret}")
+	private String SECRET_KEY;
+	
+	@Value("${jwt.token.expired}")
+	private long expired;
+	
+	public Optional<String> getJwtToken(HttpServletRequest request)
+	{
+		final String authHeader = request.getHeader("Authorization");
+		if (authHeader == null || !authHeader.startsWith("Bearer "))
+			return Optional.empty();
+		return Optional.of(authHeader.substring(7));
+	}
 	
 	public String extractUsername(String token)
 	{
@@ -40,7 +54,7 @@ public class JwtService {
 					.add(new HashMap<>())
 					.subject(userDetails.getUsername())
 					.issuedAt(new Date(System.currentTimeMillis()))
-					.expiration(new Date(System.currentTimeMillis() + 60_000))
+					.expiration(new Date(System.currentTimeMillis() + expired))
 					.and()
 				.signWith(getSignInKey())
 				.compact();			
@@ -54,7 +68,7 @@ public class JwtService {
 					.add(extraClaims)
 					.subject(userDetails.getUsername())
 					.issuedAt(new Date(System.currentTimeMillis()))
-					.expiration(new Date(System.currentTimeMillis() + 60_000))
+					.expiration(new Date(System.currentTimeMillis() + expired))
 					.and()
 				.signWith(getSignInKey())
 				.compact();			

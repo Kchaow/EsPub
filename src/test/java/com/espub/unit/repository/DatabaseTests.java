@@ -32,8 +32,7 @@ import com.espub.model.User;
 @DataJpaTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class DatabaseTests 
-{
-	
+{	
 	@Nested
 	class EssayRepositoryTests
 	{
@@ -298,9 +297,9 @@ public class DatabaseTests
 		void setupComment()
 		{
 			user = User.builder()
-					.password("password")
+					.password("encodedPassword")
 					.salt("salt")
-					.username("login")
+					.username("username")
 					.profileImage("image")
 					.status("status")
 					.description("description")

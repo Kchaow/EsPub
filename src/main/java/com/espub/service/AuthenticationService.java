@@ -2,7 +2,6 @@ package com.espub.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,8 +16,6 @@ import com.espub.dto.AuthenticationResponse;
 import com.espub.dto.RegisterRequest;
 import com.espub.model.Role;
 import com.espub.model.User;
-
-import io.jsonwebtoken.security.Request;
 
 @Service
 public class AuthenticationService 
@@ -36,16 +33,14 @@ public class AuthenticationService
 	
 	public AuthenticationResponse register(RegisterRequest registerRequest)
 	{
-		Role role = Role.builder()
-				.name("USER")
-				.build();
-		List<Role> list = new ArrayList<>();
-		list.add(role);
-		roleDao.save(role);
+		String roleName = "USER";
+		Role role = roleDao.findByName(roleName).get();
+		List<Role> roleList = new ArrayList<>();
+		roleList.add(role);
 		User user = User.builder()
 				.username(registerRequest.getUsername())
 				.password(passwordEncoder.encode(registerRequest.getPassword()))
-				.role(list)
+				.role(roleList)
 				.build();
 		userDao.save(user);
 		var jwtToken = jwtService.generateToken(user);
@@ -54,10 +49,10 @@ public class AuthenticationService
 				.build();
 	}
 	
-	public AuthenticationResponse authenticate(AuthenticationRequest registerRequest)
+	public AuthenticationResponse authenticate(AuthenticationRequest authRequest)
 	{
-		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(registerRequest.getUsername(), registerRequest.getPassword()));
-		User user = userDao.findByUsername(registerRequest.getUsername()).orElseThrow();
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+		User user = userDao.findByUsername(authRequest.getUsername()).orElseThrow();
 		var jwtToken = jwtService.generateToken(user);
 		return AuthenticationResponse.builder()
 				.token(jwtToken)

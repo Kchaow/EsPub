@@ -27,8 +27,8 @@ public class AuthenticationController
 	}
 	
 	@PostMapping("/authenticate")
-	public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request)
+	public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authRequest)
 	{
-		return new ResponseEntity<>(authenticationService.authenticate(request), HttpStatus.OK);
+		return new ResponseEntity<>(authenticationService.authenticate(authRequest), HttpStatus.OK);
 	}
 }
