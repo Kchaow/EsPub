@@ -5,7 +5,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -339,6 +339,12 @@ public class DatabaseTests
 			userDao.deleteById(created.getId());
 			
 			assertEquals(userDao.existsById(created.getId()), false);
+		}
+		@Test
+		void existByUsernameShouldReturnTrue()
+		{
+			userDao.save(user);
+			assertTrue(userDao.existsByUsername(user.getUsername()));
 		}
 	}
 }

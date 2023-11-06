@@ -1,7 +1,6 @@
 package com.espub.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,14 +20,14 @@ public class AuthenticationController
 	private AuthenticationService authenticationService;
 	
 	@PostMapping("/register")
-	public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request)
+	public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) //TODO добавить валидацию
 	{
-		return new ResponseEntity<>(authenticationService.register(request), HttpStatus.OK);
+		return authenticationService.register(request);
 	}
 	
 	@PostMapping("/authenticate")
-	public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authRequest)
+	public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authRequest) //TODO добавить валидацию
 	{
-		return new ResponseEntity<>(authenticationService.authenticate(authRequest), HttpStatus.OK);
+		return authenticationService.authenticate(authRequest);
 	}
 }

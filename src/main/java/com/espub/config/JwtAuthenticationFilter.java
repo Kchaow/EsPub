@@ -13,6 +13,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.espub.service.JwtService;
 import com.espub.service.UserService;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,26 +34,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException 
 	{
-		final String jwt;
-		final String username;
-		jwt = jwtService.getJwtToken(request).orElse(null);
-		if (jwt == null)
+		try 
 		{
-			filterChain.doFilter(request, response);
-			return;
-		}
-		username = jwtService.extractUsername(jwt);
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
-		{
-			UserDetails userDetails = userService.loadUserByUsername(username);
-			if (jwtService.isTokenValid(jwt, userDetails))
+			final String jwt;
+			final String username;
+			jwt = jwtService.getJwtToken(request).orElse(null);
+			if (jwt == null)
 			{
-				UsernamePasswordAuthenticationToken authToken =
-						new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(authToken);
+				filterChain.doFilter(request, response);
+				return;
 			}
+			username = jwtService.extractUsername(jwt);
+			if (username != null && SecurityContextHolder.getContext().getAuthentication() == null)
+			{
+				UserDetails userDetails = userService.loadUserByUsername(username);
+				if (jwtService.isTokenValid(jwt, userDetails))
+				{
+					UsernamePasswordAuthenticationToken authToken =
+							new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(authToken);
+				}
+			}
+			
+			filterChain.doFilter(request, response);
 		}
-		filterChain.doFilter(request, response);
+		catch (ExpiredJwtException | MalformedJwtException e)
+		{
+			//TODO реализовать логирование исключения
+			filterChain.doFilter(request, response);
+		}
 	}
 }

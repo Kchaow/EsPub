@@ -13,7 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,12 +37,12 @@ public class JwtService {
 		return Optional.of(authHeader.substring(7));
 	}
 	
-	public String extractUsername(String token)
+	public String extractUsername(String token) throws ExpiredJwtException, MalformedJwtException
 	{
 		return extractClaim(token, Claims::getSubject);
 	}
 	
-	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver)
+	public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) throws ExpiredJwtException, MalformedJwtException
 	{
 		final Claims claims = extractAllClaims(token);
 		return claimsResolver.apply(claims);
@@ -90,7 +92,7 @@ public class JwtService {
 		return extractClaim(token, Claims::getExpiration);
 	}
 	
-	private Claims extractAllClaims(String token)
+	private Claims extractAllClaims(String token) throws ExpiredJwtException, MalformedJwtException
 	{
 		return Jwts
 				.parser()

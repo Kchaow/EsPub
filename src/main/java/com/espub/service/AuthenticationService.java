@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,8 +34,11 @@ public class AuthenticationService
 	@Autowired
 	private AuthenticationManager authenticationManager;
 	
-	public AuthenticationResponse register(RegisterRequest registerRequest)
+	public ResponseEntity<AuthenticationResponse> register(RegisterRequest registerRequest)
 	{
+		if (userDao.existsByUsername(registerRequest.getUsername()))
+			return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+		
 		String roleName = "USER";
 		Role role = roleDao.findByName(roleName).get();
 		List<Role> roleList = new ArrayList<>();
@@ -44,18 +50,33 @@ public class AuthenticationService
 				.build();
 		userDao.save(user);
 		var jwtToken = jwtService.generateToken(user);
-		return AuthenticationResponse.builder()
-				.token(jwtToken)
-				.build();
+		return new ResponseEntity<>(
+					AuthenticationResponse.builder()
+					.token(jwtToken)
+					.build(),
+					HttpStatus.OK
+				);
 	}
 	
-	public AuthenticationResponse authenticate(AuthenticationRequest authRequest)
+	public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest authRequest)
 	{
-		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-		User user = userDao.findByUsername(authRequest.getUsername()).orElseThrow();
-		var jwtToken = jwtService.generateToken(user);
-		return AuthenticationResponse.builder()
-				.token(jwtToken)
-				.build(); 
+		try
+		{
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+			User user = userDao.findByUsername(authRequest.getUsername()).orElseThrow();
+			var jwtToken = jwtService.generateToken(user);
+			return new ResponseEntity<>(
+						AuthenticationResponse.builder()
+						.token(jwtToken)
+						.build(),
+						HttpStatus.OK
+					);
+		}
+		catch (BadCredentialsException e)
+		{
+			//TODO залогировать
+			return new ResponseEntity<>(null,HttpStatus.FORBIDDEN);
+		}
+		
 	}
 }
