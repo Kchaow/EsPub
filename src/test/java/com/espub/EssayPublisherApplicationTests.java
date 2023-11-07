@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class EssayPublisherApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void contextLoadsWithDatabase() {
 	}
 
 }

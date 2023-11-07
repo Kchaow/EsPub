@@ -1,12 +1,6 @@
 package com.espub.unit.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Locale;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,26 +11,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.espub.service.EssayService;
+import com.espub.model.User;
 import com.espub.service.JwtService;
 
-import jakarta.servlet.AsyncContext;
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletConnection;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpUpgradeHandler;
-import jakarta.servlet.http.Part;
 
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
@@ -46,35 +28,43 @@ public class JwtServiceTest
 {
 	@Mock
 	HttpServletRequest httpServletRequest;
+	@Mock
+	User user;
 	@InjectMocks
 	private JwtService jwtService;
 	private String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-			+ ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
-			+ ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+			+ ".eyJzdWIiOiJKb2huIERvZSJ9"
+			+ ".dmV--DEQekQoB33BQqwalfD_TaboPTrynVMgqbkyj_M";
+	private String badToken = "badToken";
+	private String expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+			+ "eyJleHAiOjEsInN1YiI6IkpvaG4gRG9lIn0."
+			+ "rhTUbYFBSvHwzMM7cnC11wNxyco7OAvOFoEtx5qAMlc";
 	private String header = "Bearer " + token;
 	private String subject = "John Doe";
 	
 	@Test
 	public void getJwtTokenShouldReturnToken()
 	{
-		try
-		{
 			when(httpServletRequest.getHeader(Mockito.anyString())).thenReturn(header);
 			
 			Optional<String> output = jwtService.getJwtToken(httpServletRequest);
 			
 			assertDoesNotThrow(() -> output.get());
 			assertEquals(output.get(), token);
-		}
-		catch(Exception e)
-		{
-			
-		}
 	}
 	@Test
 	public void getJwtTokenShouldReturnEmptyIfNoHeader()
 	{
 		when(httpServletRequest.getHeader(Mockito.anyString())).thenReturn(null);
+			
+		Optional<String> output = jwtService.getJwtToken(httpServletRequest);
+			
+		assertEquals(output.isEmpty(), true);
+	}
+	@Test
+	public void getJwtTokenShouldReturnEmptyIfNotJwtToken()
+	{
+		when(httpServletRequest.getHeader(Mockito.anyString())).thenReturn("anotherToken");
 			
 		Optional<String> output = jwtService.getJwtToken(httpServletRequest);
 			
@@ -87,7 +77,35 @@ public class JwtServiceTest
 		
 		assertEquals(name, subject);
 	}
-	
+	@Test
+	public void extractUsernameShouldReturnClaim()
+	{
+		String name = jwtService.extractUsername(token);
+		
+		assertEquals(name, subject);
+	}
+	@Test
+	public void extractClaimAndExtractUsernameShouldThrowMalformedJwtException()
+	{
+		assertThrowsExactly(MalformedJwtException.class, () -> jwtService.extractClaim(badToken, (x) -> x.getSubject()));
+		assertThrowsExactly(MalformedJwtException.class, () -> jwtService.extractUsername(badToken));
+	}
+	@Test
+	public void extractClaimAndExtractUsernameShouldThrowExpiredJwtExceptionException()
+	{
+		assertThrowsExactly(ExpiredJwtException.class, () -> jwtService.extractClaim(expiredToken, (x) -> x.getSubject()));
+		assertThrowsExactly(ExpiredJwtException.class, () -> jwtService.extractUsername(expiredToken));
+	}
+	@Test
+	public void generateTokenShouldntThrowInvalidKeyException()
+	{
+		when(user.getUsername()).thenReturn(subject);
+		Map<String, Object> map = new HashMap<>();
+		map.put("claim", "claimValue");
+		
+		assertDoesNotThrow(() -> jwtService.generateToken(user));
+		assertDoesNotThrow(() -> jwtService.generateToken(map ,user));
+	}
 }
 
 
