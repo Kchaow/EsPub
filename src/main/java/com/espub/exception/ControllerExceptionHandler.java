@@ -69,6 +69,15 @@ public class ControllerExceptionHandler
 		return respondJsonError(errorText);
 	}
 	
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	@ExceptionHandler(NoPermissionException.class)
+	public String handleNoPermissionToData(NoPermissionException ex)
+	{
+		String errorText = "no permission to access data";
+		logger.error("{}: {}", ex.toString(), errorText);
+		return respondJsonError(errorText);
+	}
+	
 	private String respondJsonError(String error)
 	{
 		ObjectNode objectNode = objectMapper.createObjectNode();
