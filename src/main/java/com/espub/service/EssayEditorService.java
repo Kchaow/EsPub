@@ -27,11 +27,11 @@ public class EssayEditorService
 	private EssayDao essayDao;
 	@Autowired
 	private UserDao userDao;
-	@Autowired
-	private Authentication authentication;
+//	@Autowired
+//	private Authentication authentication;
 	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
-	public ResponseEntity<String> addEssay(EssayRequest requestEssay)
+	public ResponseEntity<String> addEssay(EssayRequest requestEssay, Authentication authentication)
 	{
 		String username = authentication.getName();
 		Calendar date = new GregorianCalendar();
@@ -44,9 +44,12 @@ public class EssayEditorService
 				.build();
 		essay = essayDao.save(essay);
 		logger.debug("New essay was added: {}", essay.getId());
-		return new ResponseEntity<>("success", HttpStatus.CREATED);
+		ResponseEntity<String> response = ResponseEntity.status(HttpStatus.CREATED)
+				.header("Location", "essay/" + essay.getId())
+				.body("success");
+		return response;
 	}
-	public ResponseEntity<String> deleteEssay(int id) throws NoSuchElementException, NoPermissionException
+	public ResponseEntity<String> deleteEssay(int id, Authentication authentication) throws NoSuchElementException, NoPermissionException
 	{
 		if (!essayDao.existsById(id))
 			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));
@@ -65,7 +68,7 @@ public class EssayEditorService
 		logger.debug("Essay with id {} was deleted", id);
 		return new ResponseEntity<String>("success", HttpStatus.OK);
 	}
-	public ResponseEntity<String> modifyEssay(EssayRequest essay, int id) throws NoSuchElementException, NoPermissionException
+	public ResponseEntity<String> modifyEssay(EssayRequest essay, int id, Authentication authentication) throws NoSuchElementException, NoPermissionException
 	{
 		if (!essayDao.existsById(id))
 			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));

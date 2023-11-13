@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,6 +75,15 @@ public class ControllerExceptionHandler
 	public String handleNoPermissionToData(NoPermissionException ex)
 	{
 		String errorText = "no permission to access data";
+		logger.error("{}: {}", ex.toString(), errorText);
+		return respondJsonError(errorText);
+	}
+	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public String handlerMethodArgumentType(MethodArgumentTypeMismatchException ex)
+	{
+		String errorText = "invalid request params";
 		logger.error("{}: {}", ex.toString(), errorText);
 		return respondJsonError(errorText);
 	}

@@ -41,8 +41,9 @@ public class SecurityConfig
 							RegexRequestMatcher.regexMatcher(HttpMethod.DELETE, "essay/\\d")
 							).authenticated()
 					.requestMatchers(HttpMethod.POST, "essay").authenticated()
-					.requestMatchers("/essay/edit/**").hasAuthority("ADMIN")
-					.requestMatchers("/**").permitAll()
+					.requestMatchers("/essay/**").permitAll()
+//					.requestMatchers("/essay/edit/**").hasAuthority("ADMIN")
+//					.requestMatchers("/**").permitAll()
 					)
 			.sessionManagement((sessionManagement) -> sessionManagement
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
