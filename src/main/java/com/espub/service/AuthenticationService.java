@@ -3,6 +3,8 @@ package com.espub.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,11 @@ import com.espub.dao.UserDao;
 import com.espub.dto.AuthenticationRequest;
 import com.espub.dto.AuthenticationResponse;
 import com.espub.dto.RegisterRequest;
+import com.espub.exception.AlreadyExistingUsername;
 import com.espub.model.Role;
 import com.espub.model.User;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthenticationService 
@@ -33,11 +38,14 @@ public class AuthenticationService
 	private JwtService jwtService;
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	@Autowired
+	private HttpServletRequest request;
+	Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 	
-	public ResponseEntity<AuthenticationResponse> register(RegisterRequest registerRequest)
+	public ResponseEntity<AuthenticationResponse> register(RegisterRequest registerRequest) throws AlreadyExistingUsername
 	{
 		if (userDao.existsByUsername(registerRequest.getUsername()))
-			return new ResponseEntity<>(null, HttpStatus.CONFLICT);
+			throw new AlreadyExistingUsername(registerRequest.getUsername());
 		
 		String roleName = "USER";
 		Role role = roleDao.findByName(roleName).get();
@@ -49,7 +57,10 @@ public class AuthenticationService
 				.role(roleList)
 				.build();
 		userDao.save(user);
+		logger.debug("A record has been written to the database: {}", user.toString());
 		var jwtToken = jwtService.generateToken(user);
+		logger.info("User {} has been succesfully registered", user.getUsername());
+		logger.info("A token has been issued to user {}", user.getUsername());
 		return new ResponseEntity<>(
 					AuthenticationResponse.builder()
 					.token(jwtToken)
@@ -58,25 +69,19 @@ public class AuthenticationService
 				);
 	}
 	
-	public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest authRequest)
+	public ResponseEntity<AuthenticationResponse> authenticate(AuthenticationRequest authRequest) throws BadCredentialsException
 	{
-		try
-		{
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-			User user = userDao.findByUsername(authRequest.getUsername()).orElseThrow();
-			var jwtToken = jwtService.generateToken(user);
-			return new ResponseEntity<>(
-						AuthenticationResponse.builder()
-						.token(jwtToken)
-						.build(),
-						HttpStatus.OK
-					);
-		}
-		catch (BadCredentialsException e)
-		{
-			//TODO залогировать
-			return new ResponseEntity<>(null,HttpStatus.FORBIDDEN);
-		}
-		
+		logger.info("Authentication attempt from address {}", request.getRemoteAddr());
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+		logger.info("The user {} has succesfully authenticated", authRequest.getUsername());
+		User user = userDao.findByUsername(authRequest.getUsername()).orElseThrow();
+		var jwtToken = jwtService.generateToken(user);
+		logger.info("A token has been issued to user {}", user.getUsername());
+		return new ResponseEntity<>(
+					AuthenticationResponse.builder()
+					.token(jwtToken)
+					.build(),
+					HttpStatus.OK
+				);
 	}
 }

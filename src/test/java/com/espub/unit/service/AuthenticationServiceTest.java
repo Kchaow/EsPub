@@ -18,6 +18,7 @@ import com.espub.dao.UserDao;
 import com.espub.dto.AuthenticationRequest;
 import com.espub.dto.AuthenticationResponse;
 import com.espub.dto.RegisterRequest;
+import com.espub.exception.AlreadyExistingUsername;
 import com.espub.model.Role;
 import com.espub.model.User;
 import com.espub.service.AuthenticationService;
@@ -59,7 +60,7 @@ public class AuthenticationServiceTest
 			.build();
 	
 	@Test
-	void registerShouldReturnResponseEntityWithToken()
+	void registerShouldReturnResponseEntityWithToken() throws AlreadyExistingUsername
 	{
 		when(userDao.existsByUsername(Mockito.anyString())).thenReturn(false);
 		Role role = Role.builder()
@@ -79,7 +80,7 @@ public class AuthenticationServiceTest
 	}
 	
 	@Test
-	void registerExistingUserShouldReturnConflict()
+	void registerExistingUserShouldReturnConflict() throws AlreadyExistingUsername
 	{
 		when(userDao.existsByUsername(Mockito.anyString())).thenReturn(true);
 		ResponseEntity<AuthenticationResponse> response = 

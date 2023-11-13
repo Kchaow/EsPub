@@ -1,7 +1,9 @@
 package com.espub.service;
 
-import java.nio.file.NoSuchFileException;
+import java.util.NoSuchElementException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,34 +17,26 @@ public class EssayEditorService
 {
 	@Autowired
 	private EssayDao essayDao;
+	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
 	public ResponseEntity<String> addEssay(Essay essay)
 	{
-		essayDao.save(essay);
+		Essay newEssay = essayDao.save(essay);
+		logger.debug("New essay was added: {}", newEssay.getId());
 		return new ResponseEntity<>("success", HttpStatus.CREATED);
 	}
-	public ResponseEntity<String> deleteEssay(int id)
+	public ResponseEntity<String> deleteEssay(int id) throws NoSuchElementException
 	{
-		try 
-		{
-			if (!essayDao.existsById(id))
-				throw new NoSuchFileException(String.format("Element with %d id doesn't exist", id));
-			essayDao.deleteById(id);
-			return new ResponseEntity<String>("success", HttpStatus.OK);
-		}
-		catch (NoSuchFileException e)
-		{
-			e.printStackTrace();
-			return new ResponseEntity<String>(String.format("Element with %d id doesn't exist", id), HttpStatus.BAD_REQUEST);
-		}
+		if (!essayDao.existsById(id))
+			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));
+		essayDao.deleteById(id);
+		logger.debug("Essay with id {} was deleted", id);
+		return new ResponseEntity<String>("success", HttpStatus.OK);
 	}
 	public ResponseEntity<String> updateEssay(Essay essay)
 	{
-		if (essayDao.existsById(essay.getId()))
-		{
-			essayDao.save(essay);
-			return new ResponseEntity<>("success", HttpStatus.CREATED);
-		}
-		return new ResponseEntity<String>("The resource doesn't exist yet", HttpStatus.BAD_REQUEST);
+		Essay newEssay = essayDao.save(essay);
+		logger.debug("New essay was modified: {}", newEssay.getId());
+		return new ResponseEntity<>("success", HttpStatus.CREATED);
 	}
 }
