@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import com.espub.dao.EssayDao;
@@ -31,10 +32,21 @@ public class EssayEditorService
 		logger.debug("New essay was added: {}", newEssay.getId());
 		return new ResponseEntity<>("success", HttpStatus.CREATED);
 	}
-	public ResponseEntity<String> deleteEssay(int id) throws NoSuchElementException
+	public ResponseEntity<String> deleteEssay(int id) throws NoSuchElementException, NoPermissionException
 	{
 		if (!essayDao.existsById(id))
 			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));
+		Essay essay = essayDao.findById(id).get();
+		GrantedAuthority adminRole = new GrantedAuthority()
+				{
+					private static final long serialVersionUID = -1930735709217377217L;
+					@Override
+					public String getAuthority() {
+						return "ADMIN";
+					}
+				};
+		if (authentication.getName() != essay.getUser().getUsername() && !authentication.getAuthorities().contains(adminRole))
+			throw new NoPermissionException();
 		essayDao.deleteById(id);
 		logger.debug("Essay with id {} was deleted", id);
 		return new ResponseEntity<String>("success", HttpStatus.OK);

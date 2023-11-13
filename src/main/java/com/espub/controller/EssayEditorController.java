@@ -35,8 +35,8 @@ public class EssayEditorController
 		logger.debug("AddNewEssay method from EssayEditorController received a request");
 		return essayEditorService.addEssay(essay);
 	}
-	@DeleteMapping("delete/{id}")
-	public ResponseEntity<String> deleteEssay(@PathVariable int id) throws NoSuchElementException
+	@DeleteMapping("{id}")
+	public ResponseEntity<String> deleteEssay(@PathVariable int id) throws NoSuchElementException, NoPermissionException
 	{
 		logger.debug("DeleteEssay method from EssayEditorController received a request");
 		return essayEditorService.deleteEssay(id);

@@ -37,6 +37,9 @@ public class SecurityConfig
 					.requestMatchers(
 							RegexRequestMatcher.regexMatcher(HttpMethod.PATCH, "essay/\\d")
 							).authenticated()
+					.requestMatchers(
+							RegexRequestMatcher.regexMatcher(HttpMethod.DELETE, "essay/\\d")
+							).authenticated()
 					.requestMatchers("/essay/edit/**").hasAuthority("ADMIN")
 					.requestMatchers("/**").permitAll()
 					)
