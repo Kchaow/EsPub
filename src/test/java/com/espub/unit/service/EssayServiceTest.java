@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ArrayList;
 
@@ -14,7 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -23,6 +28,8 @@ import com.espub.model.Essay;
 import com.espub.model.User;
 import com.espub.service.EssayService;
 
+
+//Нихуя недоделано
 @ExtendWith(MockitoExtension.class)
 public class EssayServiceTest 
 {
@@ -32,29 +39,13 @@ public class EssayServiceTest
 	private EssayService essayService;
 	
 	@Test
-	void getAllShouldReturnResponseEntityWithListOfEssay()
+	void getEssayPageShouldReturnResponseEntityWithPage()
 	{
-		Essay essay1 = Essay.builder()
-				.id(1)
-				.content("Content of first essay")
-				.modificationDate(new GregorianCalendar(2023, 9, 12))
-				.publicationDate(new GregorianCalendar(2021, 4, 9))
-				.user(new User())
-				.build();
-		Essay essay2 = Essay.builder()
-				.id(2)
-				.content("Content of second essay")
-				.modificationDate(new GregorianCalendar(2022, 12, 27))
-				.publicationDate(new GregorianCalendar(2020, 3, 25))
-				.user(new User())
-				.build();
 		List<Essay> list = new ArrayList<>();
-		list.add(essay1);
-		list.add(essay2);
+		PageImpl<Essay> pageImpl = new PageImpl<>(list);
+		when(essayDao.findAll(Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		
-		when(essayDao.findAll()).thenReturn(List.of(essay1, essay2));
-		
-		ResponseEntity<List<Essay>> response = essayService.getAll();
+		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10,null, null);
 		assertAll(
 				() -> assertEquals(response.getBody(), list),
 				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
@@ -88,6 +79,22 @@ public class EssayServiceTest
 				() -> assertEquals(nonExistingResponse.getStatusCode(), HttpStatus.BAD_REQUEST)
 				);
 		
+	}
+	
+	private List<Essay> getListOfEssay(int size)
+	{
+		List<Essay> list = new ArrayList<>();
+		for (int i = 0; i < size; i++)
+		{
+			Essay essay = Essay.builder()
+					.content("" + i)
+					.modificationDate(new GregorianCalendar(2023, 9, 12))
+					.publicationDate(new GregorianCalendar(2021, 4, 9))
+					.user(new User())
+					.build();
+			list.add(essay);
+		}
+		return list;
 	}
 	
 }

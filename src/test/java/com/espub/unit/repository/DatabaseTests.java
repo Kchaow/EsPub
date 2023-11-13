@@ -11,10 +11,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.espub.dao.CategoryDao;
 import com.espub.dao.CommentDao;
@@ -36,16 +40,22 @@ public class DatabaseTests
 	@Nested
 	class EssayRepositoryTests
 	{
+		Logger logger = LoggerFactory.getLogger(DatabaseTests.class);
 		@Autowired
 		EssayDao essayDao;
+		@Autowired
+		CategoryDao categoryDao;
 		private Essay essay;
 		@BeforeEach
 		void setupEssay()
 		{
+			List<Category> list = new ArrayList<>();
+			list.add(new Category());
 			essay = Essay.builder()
 					.content("Content")
 					.publicationDate(new GregorianCalendar())
 					.user(new User())
+					.category(list)
 					.modificationDate(new GregorianCalendar()).build();
 		}
 		@Test
@@ -83,6 +93,38 @@ public class DatabaseTests
 			
 			assertEquals(essayDao.existsById(created.getId()), false);
 		}
+		@Test
+		void findAllByCategoryNameShouldReturnEssayWitjCorrectCategory()
+		{
+			{
+			List<Category> categoryList = new ArrayList<>();
+			essayDao.save(Essay.builder().category(categoryList).build());
+			}
+			
+			int id = 0;
+			{
+			List<Category> categoryList = new ArrayList<>();
+			Category category = Category.builder().name("game").build();
+			category = categoryDao.save(category);
+			id = category.getId();
+			categoryList.add(category);
+			essayDao.save(Essay.builder().category(categoryList).build());
+			}
+			
+			{
+			List<Category> categoryList = new ArrayList<>();
+			Category category = Category.builder().name("film").build();
+			category = categoryDao.save(category);
+			categoryList.add(category);
+			categoryList.add(
+					categoryDao.findById(id).get()
+					);
+			essayDao.save(Essay.builder().category(categoryList).build());
+			}
+			
+			Pageable pageRequest = PageRequest.of(0, 10);
+			assertEquals(2, essayDao.findAllByCategoryName("game", pageRequest).getTotalElements());
+		}
 	}
 	@Nested
 	class CategoryRepositoryTests
@@ -93,11 +135,8 @@ public class DatabaseTests
 		@BeforeEach
 		void setupCategory()
 		{
-			List<Essay> list = new ArrayList<>();
-			list.add(new Essay());
 			category = Category.builder()
 					.name("Name")
-					.essay(list)
 					.build();
 		}
 		@Test
