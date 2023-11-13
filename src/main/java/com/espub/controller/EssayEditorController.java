@@ -29,8 +29,8 @@ public class EssayEditorController
 	EssayEditorService essayEditorService;
 	Logger logger = LoggerFactory.getLogger(EssayEditorController.class);
 	
-	@PostMapping("add")
-	public ResponseEntity<String> addNewEssay(@RequestBody @Valid Essay essay)
+	@PostMapping
+	public ResponseEntity<String> addNewEssay(@RequestBody @Valid EssayRequest essay)
 	{
 		logger.debug("AddNewEssay method from EssayEditorController received a request");
 		return essayEditorService.addEssay(essay);

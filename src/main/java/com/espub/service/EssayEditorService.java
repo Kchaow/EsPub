@@ -2,6 +2,7 @@ package com.espub.service;
 
 import java.util.GregorianCalendar;
 import java.util.NoSuchElementException;
+import java.util.Calendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import com.espub.dao.EssayDao;
+import com.espub.dao.UserDao;
 import com.espub.dto.EssayRequest;
 import com.espub.exception.NoPermissionException;
 import com.espub.model.Essay;
+import com.espub.model.User;
 
 @Service
 public class EssayEditorService 
@@ -23,13 +26,24 @@ public class EssayEditorService
 	@Autowired
 	private EssayDao essayDao;
 	@Autowired
+	private UserDao userDao;
+	@Autowired
 	private Authentication authentication;
 	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
-	public ResponseEntity<String> addEssay(Essay essay)
+	public ResponseEntity<String> addEssay(EssayRequest requestEssay)
 	{
-		Essay newEssay = essayDao.save(essay);
-		logger.debug("New essay was added: {}", newEssay.getId());
+		String username = authentication.getName();
+		Calendar date = new GregorianCalendar();
+		User user = userDao.findByUsername(username).get();
+		Essay essay = Essay.builder()
+				.content(requestEssay.getContent())
+				.publicationDate(date)
+				.modificationDate(date)
+				.user(user)
+				.build();
+		essay = essayDao.save(essay);
+		logger.debug("New essay was added: {}", essay.getId());
 		return new ResponseEntity<>("success", HttpStatus.CREATED);
 	}
 	public ResponseEntity<String> deleteEssay(int id) throws NoSuchElementException, NoPermissionException
