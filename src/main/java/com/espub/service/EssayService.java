@@ -27,12 +27,12 @@ public class EssayService
 			pageRequest = PageRequest.of(offset, limit);
 		else
 			pageRequest = PageRequest.of(offset, limit, essayPageSort.getSortValue());
-		Page<Essay> essay;
+		Page<Essay> essayPage;
 		if (category == null)
-			essay = essayDao.findAll(pageRequest);
+			essayPage = essayDao.findAll(pageRequest);
 		else
-			essay = essayDao.findAllByCategoryName(category, pageRequest);
-		return new ResponseEntity<>(essay, HttpStatus.OK);
+			essayPage = essayDao.findAllByCategoryName(category, pageRequest);
+		return new ResponseEntity<>(essayPage, HttpStatus.OK);
 	}
 	public ResponseEntity<Essay> getById(int id) throws NoSuchElementException
 	{

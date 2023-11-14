@@ -1,5 +1,6 @@
 package com.espub.unit.service;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,9 +25,12 @@ import com.espub.model.User;
 import com.espub.service.AuthenticationService;
 import com.espub.service.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
 import java.util.Optional;
 
@@ -34,40 +38,43 @@ import java.util.Optional;
 public class AuthenticationServiceTest 
 {
 	@Mock
-	private UserDao userDao;
+	UserDao userDao;
 	@Mock
-	private RoleDao roleDao;
+	RoleDao roleDao;
 	@Mock
-	private PasswordEncoder passwordEncoder;
+	PasswordEncoder passwordEncoder;
 	@Mock
-	private JwtService jwtService;
+	JwtService jwtService;
 	@Mock
-	private AuthenticationManager authenticationManager;
+	AuthenticationManager authenticationManager;
+	@Mock
+	HttpServletRequest request;
 	@InjectMocks
 	AuthenticationService essayEditorService;
-	private String token = "receivedToken";
-	private RegisterRequest registerRequest = RegisterRequest.builder()
+	
+	String token = "receivedToken";
+	RegisterRequest registerRequest = RegisterRequest.builder()
 			.username("username")
 			.password("password")
 			.build();
-	private AuthenticationRequest authenticationRequest = AuthenticationRequest.builder()
+	AuthenticationRequest authenticationRequest = AuthenticationRequest.builder()
 			.username("username")
 			.password("password")
 			.build();
-	private AuthenticationResponse authenticationResponse = 
+	AuthenticationResponse authenticationResponse = 
 			AuthenticationResponse.builder()
 			.token(token)
 			.build();
+	Role role = Role.builder()
+			.name("USER").build();
 	
 	@Test
-	void registerShouldReturnResponseEntityWithToken() throws AlreadyExistingUsername
+	void registerNonExistingUserShouldReturnAuthenticationResponse() throws AlreadyExistingUsername
 	{
 		when(userDao.existsByUsername(Mockito.anyString())).thenReturn(false);
-		Role role = Role.builder()
-				.name("USER").build();
 		when(roleDao.findByName(Mockito.anyString())).thenReturn(Optional.of(role));
 		when(passwordEncoder.encode(Mockito.anyString())).thenReturn("encodedPassword");
-		when(userDao.save(Mockito.any(User.class))).thenReturn(null);
+		when(userDao.save(Mockito.any(User.class))).thenReturn(new User());
 		when(jwtService.generateToken(Mockito.any(User.class))).thenReturn(token);
 		
 		ResponseEntity<AuthenticationResponse> response = 
@@ -80,24 +87,20 @@ public class AuthenticationServiceTest
 	}
 	
 	@Test
-	void registerExistingUserShouldReturnConflict() throws AlreadyExistingUsername
+	void registerExistingUserShouldReturnAuthenticationResponse() throws AlreadyExistingUsername
 	{
 		when(userDao.existsByUsername(Mockito.anyString())).thenReturn(true);
-		ResponseEntity<AuthenticationResponse> response = 
-				essayEditorService.register(registerRequest);
 		
-		assertAll(
-				() -> assertEquals(null ,response.getBody()),
-				() -> assertEquals(HttpStatus.CONFLICT, response.getStatusCode())
-				);
+		assertThrowsExactly(AlreadyExistingUsername.class, () -> essayEditorService.register(registerRequest));
 	}
 	
 	@Test
-	void authenticateShouldReturnResponseEntityWithToken()
+	void authenticateExistingUserShouldReturnToken()
 	{
 		when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenReturn(null);
 		when(userDao.findByUsername(Mockito.anyString())).thenReturn(Optional.of(new User()));
 		when(jwtService.generateToken(Mockito.any(User.class))).thenReturn(token);
+		when(request.getRemoteAddr()).thenReturn("ip_addr");
 		
 		ResponseEntity<AuthenticationResponse> response = 
 				essayEditorService.authenticate(authenticationRequest);
@@ -109,16 +112,11 @@ public class AuthenticationServiceTest
 	}
 	
 	@Test
-	void authenticateWithBadCredentialsShouldReturnForbidden()
+	void authenticateWithBadCredentialsShouldThrowBadCredentialsException()
 	{
+		when(request.getRemoteAddr()).thenReturn("ip_addr");
 		when(authenticationManager.authenticate(Mockito.any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException("Wrong credentials"));
 
-		ResponseEntity<AuthenticationResponse> response = 
-				essayEditorService.authenticate(authenticationRequest);
-		
-		assertAll(
-				() -> assertEquals(null ,response.getBody()),
-				() -> assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode())
-				);
+		assertThrowsExactly(BadCredentialsException.class, () -> essayEditorService.authenticate(authenticationRequest));
 	}
 }

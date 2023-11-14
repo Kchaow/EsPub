@@ -15,7 +15,7 @@ import com.espub.model.User;
 import com.espub.service.JwtService;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -53,7 +53,7 @@ public class JwtServiceTest
 			assertEquals(output.get(), token);
 	}
 	@Test
-	public void getJwtTokenShouldReturnEmptyIfNoHeader()
+	public void getJwtTokenShouldReturnEmptyIfNoHeaderAuthorization()
 	{
 		when(httpServletRequest.getHeader(Mockito.anyString())).thenReturn(null);
 			
@@ -78,20 +78,20 @@ public class JwtServiceTest
 		assertEquals(name, subject);
 	}
 	@Test
-	public void extractUsernameShouldReturnClaim()
+	public void extractUsernameShouldReturnClaimWithName()
 	{
 		String name = jwtService.extractUsername(token);
 		
 		assertEquals(name, subject);
 	}
 	@Test
-	public void extractClaimAndExtractUsernameShouldThrowMalformedJwtException()
+	public void extractJwtWithbadSignatureOrClaimShouldThrowUnsupportedJwtException()
 	{
-		assertThrowsExactly(MalformedJwtException.class, () -> jwtService.extractClaim(badToken, (x) -> x.getSubject()));
-		assertThrowsExactly(MalformedJwtException.class, () -> jwtService.extractUsername(badToken));
+		assertThrowsExactly(UnsupportedJwtException.class, () -> jwtService.extractClaim(badToken, (x) -> x.getSubject()));
+		assertThrowsExactly(UnsupportedJwtException.class, () -> jwtService.extractUsername(badToken));
 	}
 	@Test
-	public void extractClaimAndExtractUsernameShouldThrowExpiredJwtExceptionException()
+	public void extractClaimAndExtractUsernameFromExpiredTokenShouldThrowExpiredJwtExceptionException()
 	{
 		assertThrowsExactly(ExpiredJwtException.class, () -> jwtService.extractClaim(expiredToken, (x) -> x.getSubject()));
 		assertThrowsExactly(ExpiredJwtException.class, () -> jwtService.extractUsername(expiredToken));

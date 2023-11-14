@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import com.espub.dao.EssayDao;
@@ -27,12 +26,12 @@ public class EssayEditorService
 	private EssayDao essayDao;
 	@Autowired
 	private UserDao userDao;
-//	@Autowired
-//	private Authentication authentication;
 	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
-	public ResponseEntity<String> addEssay(EssayRequest requestEssay, Authentication authentication)
+	public ResponseEntity<String> addEssay(EssayRequest requestEssay, Authentication authentication) throws NoPermissionException
 	{
+		if (authentication == null || !authentication.isAuthenticated())
+			throw new NoPermissionException();
 		String username = authentication.getName();
 		Calendar date = new GregorianCalendar();
 		User user = userDao.findByUsername(username).get();
@@ -51,18 +50,15 @@ public class EssayEditorService
 	}
 	public ResponseEntity<String> deleteEssay(int id, Authentication authentication) throws NoSuchElementException, NoPermissionException
 	{
+		if (authentication == null)
+			throw new NoPermissionException();
 		if (!essayDao.existsById(id))
 			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));
 		Essay essay = essayDao.findById(id).get();
-		GrantedAuthority adminRole = new GrantedAuthority()
-				{
-					private static final long serialVersionUID = -1930735709217377217L;
-					@Override
-					public String getAuthority() {
-						return "ADMIN";
-					}
-				};
-		if (authentication.getName() != essay.getUser().getUsername() && !authentication.getAuthorities().contains(adminRole))
+		String essayOwnerUsername = essay.getUser().getUsername();
+		String roleName = "ADMIN";
+		if (!authentication.getName().equals(essayOwnerUsername) 
+				&& authentication.getAuthorities().stream().filter((x) -> x.getAuthority().equals(roleName)).count() == 0)
 			throw new NoPermissionException();
 		essayDao.deleteById(id);
 		logger.debug("Essay with id {} was deleted", id);
@@ -73,7 +69,8 @@ public class EssayEditorService
 		if (!essayDao.existsById(id))
 			throw new NoSuchElementException(String.format("Element with %d id doesn't exist", id));
 		Essay originalEssay = essayDao.findById(id).get();
-		if (authentication.getName() != originalEssay.getUser().getUsername())
+		String essayOwnerUsername = originalEssay.getUser().getUsername();
+		if (authentication == null || !authentication.getName().equals(essayOwnerUsername) )
 			throw new NoPermissionException();
 		originalEssay.setContent(essay.getContent());
 		originalEssay.setModificationDate(new GregorianCalendar());

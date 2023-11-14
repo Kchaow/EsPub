@@ -30,7 +30,7 @@ public class EssayEditorController
 	Logger logger = LoggerFactory.getLogger(EssayEditorController.class);
 	
 	@PostMapping
-	public ResponseEntity<String> addNewEssay(@RequestBody @Valid EssayRequest essay, Authentication authentication)
+	public ResponseEntity<String> addNewEssay(@RequestBody @Valid EssayRequest essay, Authentication authentication) throws NoPermissionException
 	{
 		logger.debug("AddNewEssay method from EssayEditorController received a request");
 		return essayEditorService.addEssay(essay, authentication);
