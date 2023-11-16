@@ -17,6 +17,7 @@ import com.espub.component.EssayPageSort;
 import com.espub.model.Essay;
 import com.espub.service.EssayService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 
 @RestController
@@ -31,15 +32,16 @@ public class EssayController
 	public ResponseEntity<Page<Essay>> getEssayPage(@RequestParam @Min(0) int offset, 
 												   @RequestParam @Min(1) int limit,
 												   @RequestParam(required = false) EssayPageSort essayPageSort,
-												   @RequestParam(required = false) String category)
+												   @RequestParam(required = false) String category, 
+												   HttpServletRequest request)
 	{
 		logger.debug("GetEssayPage method from EssayController received a request");
-		return essayService.getEssayPage(offset, limit, essayPageSort, category);
+		return essayService.getEssayPage(offset, limit, essayPageSort, category, request);
 	}
 	@GetMapping("{id}")
-	public ResponseEntity<Essay> getEssay(@PathVariable int id) throws NoSuchElementException
+	public ResponseEntity<Essay> getEssay(@PathVariable int id, HttpServletRequest request) throws NoSuchElementException
 	{
 		logger.debug("GetEssay method from EssayController received a request");
-		return essayService.getById(id);
+		return essayService.getById(id, request);
 	}
 }

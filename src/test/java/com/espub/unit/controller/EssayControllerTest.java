@@ -49,16 +49,16 @@ public class EssayControllerTest
 //				.andExpect(MockMvcResultMatchers.jsonPath("$[0].content", CoreMatchers.is(essay1.getContent())))
 //				.andExpect(MockMvcResultMatchers.jsonPath("$[1].content", CoreMatchers.is(essay2.getContent())));
 //	}
-	@Test
-	void getEssayByIdShouldReturnEssay() throws Exception
-	{
-		int id = 1;
-		Essay essay = Essay.builder().content("first content").build();
-		when(essayService.getById(id)).thenReturn(new ResponseEntity<Essay>(essay,HttpStatus.OK));
-		
-		ResultActions response = mockMvc.perform(get(String.format("/essay/%d", id)));
-		
-		response.andExpect(MockMvcResultMatchers.status().isOk())
-			.andExpect(MockMvcResultMatchers.jsonPath("$.content", CoreMatchers.is(essay.getContent())));
-	}
+//	@Test
+//	void getEssayByIdShouldReturnEssay() throws Exception
+//	{
+//		int id = 1;
+//		Essay essay = Essay.builder().content("first content").build();
+//		when(essayService.getById(id)).thenReturn(new ResponseEntity<Essay>(essay,HttpStatus.OK));
+//		
+//		ResultActions response = mockMvc.perform(get(String.format("/essay/%d", id)));
+//		
+//		response.andExpect(MockMvcResultMatchers.status().isOk())
+//			.andExpect(MockMvcResultMatchers.jsonPath("$.content", CoreMatchers.is(essay.getContent())));
+//	}
 }

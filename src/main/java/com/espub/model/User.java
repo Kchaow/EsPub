@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +33,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "\"user\"")
 @PrimaryKeyJoinColumn(name="\"user\"")
 @Builder
+@EqualsAndHashCode
 public class User implements UserDetails
 {
 	@Id
@@ -38,6 +41,7 @@ public class User implements UserDetails
 	private int id;
 	private String password;
 	private String salt;
+	@Column(unique = true)
 	private String username;
 	private String profileImage;
 	private String status;

@@ -3,6 +3,7 @@ package com.espub.unit.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.espub.dao.UserDao;
 import com.espub.model.User;
@@ -73,5 +75,13 @@ public class UserRepositoryTest
 	{
 		userDao.save(user);
 		assertTrue(userDao.existsByUsername(user.getUsername()));
+	}
+	
+	@Test
+	void savingUserWithExistingNameShouldThrowException()
+	{
+		User user2 = User.builder().username("username").build();
+		userDao.save(user);
+		assertThrows(DataIntegrityViolationException.class, () -> userDao.save(user2));
 	}
 }
