@@ -1,5 +1,6 @@
 package com.espub.service;
 
+import java.time.ZoneId;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -11,9 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.espub.component.EssayPageSort;
 import com.espub.dao.EssayDao;
+import com.espub.dto.EssayResponse;
+import com.espub.dto.EssayResponsePage;
 import com.espub.model.Essay;
+import com.espub.util.EssayPageSort;
+import com.espub.util.EssayResponsePageWrapper;
+import com.espub.util.EssayResponseWrapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -23,7 +28,11 @@ public class EssayService
 	@Autowired
 	private EssayDao essayDao;
 	
-	public ResponseEntity<Page<Essay>> getEssayPage(int offset, int limit, EssayPageSort essayPageSort, String category, HttpServletRequest request)
+	public ResponseEntity<EssayResponsePage> getEssayPage(int offset, int limit, 
+													EssayPageSort essayPageSort, 
+													String category, 
+													ZoneId zoneId,
+													HttpServletRequest request)
 	{
 		PageRequest pageRequest;
 		if (essayPageSort == null)
@@ -40,15 +49,19 @@ public class EssayService
 		if (request.getHeader("If-None-Match") != null && request.getHeader("If-None-Match").equals(essayPage.hashCode() + ""))
 			return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
 		
+		EssayResponsePage essayResponsePage = EssayResponsePageWrapper.of(essayPage, zoneId);
+		
 		CacheControl cacheControl = CacheControl
 				.noCache()
 				.cachePublic();
 		return ResponseEntity.status(HttpStatus.OK)
 				.eTag(essayPage.hashCode() + "")
 				.cacheControl(cacheControl)
-				.body(essayPage);
+				.body(essayResponsePage);
 	}
-	public ResponseEntity<Essay> getById(int id, HttpServletRequest request) throws NoSuchElementException
+	public ResponseEntity<EssayResponse> getById(int id,
+										 ZoneId zoneId,
+										 HttpServletRequest request) throws NoSuchElementException
 	{
 		Optional<Essay> essay = essayDao.findById(id);
 		if (essay.isEmpty())
@@ -57,13 +70,14 @@ public class EssayService
 		if (request.getHeader("If-None-Match") != null && request.getHeader("If-None-Match").equals(essay.hashCode() + ""))
 			return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
 		
+		EssayResponse essayResponse = EssayResponseWrapper.of(essay.get(), zoneId);
 		CacheControl cacheControl = CacheControl
 				.noCache()
 				.cachePublic();
 		return ResponseEntity.status(HttpStatus.OK)
 				.eTag(essay.hashCode() + "")
 				.cacheControl(cacheControl)
-				.body(essay.get());
+				.body(essayResponse);
 				
 	}
 }

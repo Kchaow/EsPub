@@ -2,9 +2,9 @@ package com.espub.unit.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,8 @@ public class EssayRepositoryTest
 	EssayDao essayDao;
 	@Autowired
 	CategoryDao categoryDao;
-	private Essay essay;
+	Essay essay;
+	String zoneId = "Europe/Moscow";
 	@BeforeEach
 	void setupEssay()
 	{
@@ -38,10 +39,12 @@ public class EssayRepositoryTest
 		list.add(new Category());
 		essay = Essay.builder()
 				.content("Content")
-				.publicationDate(new GregorianCalendar())
+				.publicationDate(ZonedDateTime.now(
+						ZoneId.of(zoneId)))
 				.user(new User())
 				.category(list)
-				.modificationDate(new GregorianCalendar()).build();
+				.modificationDate(ZonedDateTime.now(
+						ZoneId.of(zoneId))).build();
 	}
 	@Test
 	void createRowShouldNotBeNull()

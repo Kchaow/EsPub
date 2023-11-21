@@ -1,11 +1,10 @@
 package com.espub.unit.controller;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -21,19 +21,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import org.hamcrest.CoreMatchers;
 
+import com.espub.controller.AuthenticationController;
 import com.espub.dto.AuthenticationRequest;
 import com.espub.dto.AuthenticationResponse;
 import com.espub.dto.RegisterRequest;
+import com.espub.exception.ControllerExceptionHandler;
 import com.espub.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Disabled("Я хуй знает")
 @SpringBootTest
-@AutoConfigureMockMvc
+//@WebMvcTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class AuthenticationControllerTest 
 {
-	@Autowired
+	//@Autowired
 	private MockMvc mockMvc;
 	@Autowired
     private ObjectMapper objectMapper;
@@ -42,6 +43,15 @@ public class AuthenticationControllerTest
 	private String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 			+ ".eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
 			+ ".SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+	@Autowired
+	private AuthenticationController authenticationController;
+	@BeforeEach
+	void setupMockMvc()
+	{
+		mockMvc = MockMvcBuilders.standaloneSetup(authenticationController)
+	            .setControllerAdvice(new ControllerExceptionHandler())
+	            .build();
+	}
 	
 	@Test
 	void registerShouldReturnToken() throws Exception
@@ -135,4 +145,27 @@ public class AuthenticationControllerTest
 		
 		response.andExpect(MockMvcResultMatchers.status().isForbidden());
 	}
+	
+//	@TestConfiguration
+//    static class TestConfig 
+//	{
+//		   @Bean
+//		    ObjectMapper objectMapper() {
+//		        return JsonMapper.builder().configure(MapperFeature.DEFAULT_VIEW_INCLUSION, true)
+//		        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+//		        .build();
+//		    }
+//		   
+//		   @Bean
+//		   JwtService jwtService()
+//		   {
+//			   return new JwtService();
+//		   }
+//		   
+//		   @Bean
+//		   UserService userService()
+//		   {
+//			   return new UserService();
+//		   }
+//    }
 }

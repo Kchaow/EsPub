@@ -26,9 +26,9 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 public class JwtService {
 	@Value("${jwt.token.secret}")
-	private String SECRET_KEY = "7c8d4b5bb5f4efe8aab6aeb7c301baae27c9c8b05ca7946439b5e21eb2d12750";
+	private String SECRET_KEY;
 	@Value("${jwt.token.expired}")
-	private long expired = 60_000_00;
+	private long expired;
 	Logger logger = LoggerFactory.getLogger(JwtService.class);
 	
 	public Optional<String> getJwtToken(HttpServletRequest request)

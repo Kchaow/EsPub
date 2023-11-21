@@ -2,10 +2,11 @@ package com.espub.unit.service;
 
 import static org.mockito.Mockito.when;
 
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -18,17 +19,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.espub.component.EssayPageSort;
 import com.espub.dao.EssayDao;
+import com.espub.dto.EssayResponse;
+import com.espub.dto.EssayResponsePage;
 import com.espub.model.Essay;
 import com.espub.model.User;
 import com.espub.service.EssayService;
+import com.espub.util.EssayPageSort;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -41,6 +43,7 @@ public class EssayServiceTest
 	HttpServletRequest httpServletRequest;
 	@InjectMocks
 	EssayService essayService;
+	ZoneId zoneId = ZoneId.of("Europe/Moscow");
 	
 	
 	@Test
@@ -53,10 +56,10 @@ public class EssayServiceTest
 		when(essayDao.findAll(Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(null);
 		
-		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10, null, null, httpServletRequest);
+		ResponseEntity<EssayResponsePage> response = essayService.getEssayPage(0, 10, null, null, zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(response.getBody().getTotalElements(), essayCount),
-				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
+				() -> assertEquals(essayCount, response.getBody().getEssayResponseList().size()),
+				() -> assertEquals(HttpStatus.OK, response.getStatusCode())
 				);
 	}
 	
@@ -70,10 +73,10 @@ public class EssayServiceTest
 		when(essayDao.findAllByCategoryName(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(null);
 		
-		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10, null, "category", httpServletRequest);
+		ResponseEntity<EssayResponsePage> response = essayService.getEssayPage(0, 10, null, "category", zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(response.getBody().getTotalElements(), essayCount),
-				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
+				() -> assertEquals(essayCount, response.getBody().getEssayResponseList().size()),
+				() -> assertEquals(HttpStatus.OK, response.getStatusCode())
 				);
 		
 	}
@@ -89,10 +92,10 @@ public class EssayServiceTest
 		when(essayDao.findAllByCategoryName(Mockito.anyString(), Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(null);
 		
-		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10, essayPageSort, "category", httpServletRequest);
+		ResponseEntity<EssayResponsePage> response = essayService.getEssayPage(0, 10, essayPageSort, "category", zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(response.getBody().getTotalElements(), essayCount),
-				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
+				() -> assertEquals(essayCount, response.getBody().getEssayResponseList().size()),
+				() -> assertEquals(HttpStatus.OK, response.getStatusCode())
 				);
 	}
 	
@@ -104,10 +107,10 @@ public class EssayServiceTest
 		when(essayDao.findById(Mockito.anyInt())).thenReturn(Optional.of(essay));
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(null);
 		
-		ResponseEntity<Essay> response = essayService.getById(0, httpServletRequest);
+		ResponseEntity<EssayResponse> response = essayService.getById(0, zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(response.getBody(), essay),
-				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
+				() -> assertEquals(essay.getPublicationDate(), response.getBody().getPublicationDate()),
+				() -> assertEquals(HttpStatus.OK, response.getStatusCode())
 				);
 	}
 	
@@ -115,8 +118,7 @@ public class EssayServiceTest
 	void getByUnknownIdShouldThrowNoSuchElementException()
 	{
 		when(essayDao.findById(Mockito.anyInt())).thenReturn(Optional.empty());
-		
-		assertThrowsExactly(NoSuchElementException.class, () -> essayService.getById(0, httpServletRequest));
+		assertThrowsExactly(NoSuchElementException.class, () -> essayService.getById(0, zoneId, httpServletRequest));
 	}
 	
 	@Test
@@ -130,7 +132,7 @@ public class EssayServiceTest
 		when(essayDao.findAll(Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(pageImplHash);
 		
-		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10, null, null, httpServletRequest);
+		ResponseEntity<EssayResponsePage> response = essayService.getEssayPage(0, 10, null, null, zoneId, httpServletRequest);
 		assertAll(
 				() -> assertEquals(response.getBody(), null),
 				() -> assertEquals(response.getStatusCode(), HttpStatus.NOT_MODIFIED)
@@ -148,10 +150,10 @@ public class EssayServiceTest
 		when(essayDao.findAll(Mockito.any(Pageable.class))).thenReturn(pageImpl);
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(pageImplHash);
 		
-		ResponseEntity<Page<Essay>> response = essayService.getEssayPage(0, 10, null, null, httpServletRequest);
+		ResponseEntity<EssayResponsePage> response = essayService.getEssayPage(0, 10, null, null, zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(response.getBody().getTotalElements(), essayCount),
-				() -> assertEquals(response.getStatusCode(), HttpStatus.OK)
+				() -> assertEquals(essayCount, response.getBody().getEssayResponseList().size()),
+				() -> assertEquals( HttpStatus.OK, response.getStatusCode())
 				);
 	}
 	
@@ -163,7 +165,7 @@ public class EssayServiceTest
 		when(essayDao.findById(Mockito.anyInt())).thenReturn(Optional.of(essay));
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(essayHash);
 		
-		ResponseEntity<Essay> response = essayService.getById(0, httpServletRequest);
+		ResponseEntity<EssayResponse> response = essayService.getById(0, zoneId, httpServletRequest);
 		assertAll(
 				() -> assertEquals(null, response.getBody()),
 				() -> assertEquals(HttpStatus.NOT_MODIFIED, response.getStatusCode())
@@ -178,9 +180,9 @@ public class EssayServiceTest
 		when(essayDao.findById(Mockito.anyInt())).thenReturn(Optional.of(essay));
 		when(httpServletRequest.getHeader("If-None-Match")).thenReturn(essayHash);
 		
-		ResponseEntity<Essay> response = essayService.getById(0, httpServletRequest);
+		ResponseEntity<EssayResponse> response = essayService.getById(0, zoneId, httpServletRequest);
 		assertAll(
-				() -> assertEquals(essay, response.getBody()),
+				() -> assertEquals(essay.getPublicationDate(), response.getBody().getPublicationDate()),
 				() -> assertEquals(HttpStatus.OK, response.getStatusCode())
 				);
 	}
@@ -192,8 +194,10 @@ public class EssayServiceTest
 		{
 			Essay essay = Essay.builder()
 					.content("" + i)
-					.modificationDate(new GregorianCalendar(2023, 9, 12))
-					.publicationDate(new GregorianCalendar(2021, 4, 9))
+					.modificationDate(ZonedDateTime.now(
+							zoneId))
+					.publicationDate(ZonedDateTime.now(
+							zoneId))
 					.user(new User())
 					.build();
 			list.add(essay);

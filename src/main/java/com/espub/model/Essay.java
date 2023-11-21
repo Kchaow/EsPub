@@ -1,6 +1,6 @@
 package com.espub.model;
 
-import java.util.Calendar;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -27,10 +27,10 @@ public class Essay
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String content;
-	private Calendar publicationDate;
+	private ZonedDateTime publicationDate;
 	@ManyToOne
 	private User user;
-	private Calendar modificationDate;
+	private ZonedDateTime modificationDate;
 	@ManyToMany
 	private List<Category> category;
 }

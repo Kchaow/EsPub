@@ -27,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.espub.dao.EssayDao;
 import com.espub.dao.UserDao;
@@ -53,9 +54,10 @@ public class EssayEditorServiceTest
 	Authentication authentication;
 	
 	@BeforeEach
-	void setAuthentication()
+	void setAuthentication() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		authentication = SecurityContextHolder.getContext().getAuthentication();
+		ReflectionTestUtils.setField(essayEditorService, "zoneId", "Europe/Moscow");
 	}
 	
 	@Test

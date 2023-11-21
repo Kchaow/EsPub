@@ -1,4 +1,4 @@
-package com.espub.component;
+package com.espub.util;
 
 import org.springframework.data.domain.Sort;
 

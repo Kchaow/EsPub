@@ -1,12 +1,13 @@
 package com.espub.service;
 
-import java.util.GregorianCalendar;
 import java.util.NoSuchElementException;
-import java.util.Calendar;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,8 @@ public class EssayEditorService
 	private EssayDao essayDao;
 	@Autowired
 	private UserDao userDao;
+	@Value("${server.zoneId}")
+	private String zoneId;
 	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
 	public ResponseEntity<String> addEssay(EssayRequest requestEssay, Authentication authentication) throws NoPermissionException
@@ -33,12 +36,15 @@ public class EssayEditorService
 		if (authentication == null || !authentication.isAuthenticated())
 			throw new NoPermissionException();
 		String username = authentication.getName();
-		Calendar date = new GregorianCalendar();
 		User user = userDao.findByUsername(username).get();
 		Essay essay = Essay.builder()
 				.content(requestEssay.getContent())
-				.publicationDate(date)
-				.modificationDate(date)
+				.publicationDate(ZonedDateTime.now(
+						ZoneId.of(zoneId)
+						))
+				.modificationDate(ZonedDateTime.now(
+						ZoneId.of(zoneId)
+						))
 				.user(user)
 				.build();
 		essay = essayDao.save(essay);
@@ -73,7 +79,9 @@ public class EssayEditorService
 		if (authentication == null || !authentication.getName().equals(essayOwnerUsername) )
 			throw new NoPermissionException();
 		originalEssay.setContent(essay.getContent());
-		originalEssay.setModificationDate(new GregorianCalendar());
+		originalEssay.setModificationDate(ZonedDateTime.now(
+				ZoneId.of(zoneId)
+				));
 		Essay newEssay = essayDao.save(originalEssay);
 		logger.debug("Essay was modified: {}", newEssay.getId());
 		return new ResponseEntity<>("success", HttpStatus.CREATED);

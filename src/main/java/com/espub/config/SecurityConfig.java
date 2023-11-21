@@ -40,6 +40,7 @@ public class SecurityConfig
 							RegexRequestMatcher.regexMatcher(HttpMethod.DELETE, "essay/\\d")
 							).authenticated()
 					.requestMatchers(HttpMethod.POST, "essay").authenticated()
+					.requestMatchers("/**").permitAll()
 					)
 			.sessionManagement((sessionManagement) -> sessionManagement
 					.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

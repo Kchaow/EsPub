@@ -4,12 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.espub.model.User;
 import com.espub.service.JwtService;
@@ -41,6 +43,13 @@ public class JwtServiceTest
 			+ "rhTUbYFBSvHwzMM7cnC11wNxyco7OAvOFoEtx5qAMlc";
 	private String header = "Bearer " + token;
 	private String subject = "John Doe";
+	
+	@BeforeEach
+	void setValueFields()
+	{
+		ReflectionTestUtils.setField(jwtService, "SECRET_KEY", "7c8d4b5bb5f4efe8aab6aeb7c301baae27c9c8b05ca7946439b5e21eb2d12750");
+		ReflectionTestUtils.setField(jwtService, "expired", 3600000);
+	}
 	
 	@Test
 	public void getJwtTokenShouldReturnToken()
