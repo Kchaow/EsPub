@@ -28,7 +28,7 @@ public class EssayEditorService
 	@Autowired
 	private UserDao userDao;
 	@Value("${server.zoneId}")
-	private String zoneId;
+	private ZoneId zoneId;
 	private Logger logger = LoggerFactory.getLogger(EssayEditorService.class);
 	
 	public ResponseEntity<String> addEssay(EssayRequest requestEssay, Authentication authentication) throws NoPermissionException
@@ -39,12 +39,8 @@ public class EssayEditorService
 		User user = userDao.findByUsername(username).get();
 		Essay essay = Essay.builder()
 				.content(requestEssay.getContent())
-				.publicationDate(ZonedDateTime.now(
-						ZoneId.of(zoneId)
-						))
-				.modificationDate(ZonedDateTime.now(
-						ZoneId.of(zoneId)
-						))
+				.publicationDate(ZonedDateTime.now(zoneId))
+				.modificationDate(ZonedDateTime.now(zoneId))
 				.user(user)
 				.build();
 		essay = essayDao.save(essay);
@@ -79,9 +75,7 @@ public class EssayEditorService
 		if (authentication == null || !authentication.getName().equals(essayOwnerUsername) )
 			throw new NoPermissionException();
 		originalEssay.setContent(essay.getContent());
-		originalEssay.setModificationDate(ZonedDateTime.now(
-				ZoneId.of(zoneId)
-				));
+		originalEssay.setModificationDate(ZonedDateTime.now(zoneId));
 		Essay newEssay = essayDao.save(originalEssay);
 		logger.debug("Essay was modified: {}", newEssay.getId());
 		return new ResponseEntity<>("success", HttpStatus.CREATED);

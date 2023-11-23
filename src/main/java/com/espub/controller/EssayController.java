@@ -1,12 +1,12 @@
 package com.espub.controller;
 
-import java.time.ZoneId;
 import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,18 +34,17 @@ public class EssayController
 												   @RequestParam @Min(1) int limit,
 												   @RequestParam(required = false) EssayPageSort essayPageSort,
 												   @RequestParam(required = false) String category,
-												   ZoneId zoneId,
 												   HttpServletRequest request)
 	{
 		logger.debug("GetEssayPage method from EssayController received a request");
-		return essayService.getEssayPage(offset, limit, essayPageSort, category, zoneId, request);
+		return essayService.getEssayPage(offset, limit, essayPageSort, category, request);
 	}
 	@GetMapping("{id}")
 	public ResponseEntity<EssayResponse> getEssay(@PathVariable int id,
-										  ZoneId zoneId,
+										  Authentication authentication,
 										  HttpServletRequest request) throws NoSuchElementException
 	{
 		logger.debug("GetEssay method from EssayController received a request");
-		return essayService.getById(id, zoneId, request);
+		return essayService.getById(id, authentication, request);
 	}
 }

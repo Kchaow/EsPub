@@ -7,13 +7,13 @@ import com.espub.model.Essay;
 
 public class EssayResponseWrapper 
 {
-	private static String sZoneId = "Europe/Moscow";
+	private static ZoneId sZoneId = ZoneId.of("Europe/Moscow");
 	private EssayResponseWrapper() { }
 	
 	public static EssayResponse of(Essay essay, ZoneId zoneId)
 	{
 		if (essay == null) return null;
-		if (zoneId == null) zoneId = ZoneId.of(sZoneId);
+		if (zoneId == null) zoneId = sZoneId;
 		int annotationSize = 30;
 		return EssayResponse.builder()
 				.annotation(createEssayAnnotation(essay, annotationSize))

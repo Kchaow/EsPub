@@ -22,7 +22,7 @@ public class ReactionRepositoryTest
 {
 	@Autowired
 	ReactionDao reactionDao;
-	private Reaction reaction;
+	Reaction reaction;
 	@BeforeEach
 	void setupComment()
 	{

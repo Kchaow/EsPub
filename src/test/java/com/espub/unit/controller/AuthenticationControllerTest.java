@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.hamcrest.CoreMatchers;
+import org.jboss.logging.Logger;
 
 import com.espub.controller.AuthenticationController;
 import com.espub.dto.AuthenticationRequest;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class AuthenticationControllerTest 
 {
+	Logger logger = Logger.getLogger(AuthenticationControllerTest.class);
 	//@Autowired
 	private MockMvc mockMvc;
 	@Autowired
@@ -79,6 +81,7 @@ public class AuthenticationControllerTest
 								CoreMatchers.is(token)
 						)
 				);
+		logger.info(response.andReturn().getResponse().getContentAsString());
 	}
 	
 	@Test

@@ -15,12 +15,12 @@ import lombok.Getter;
 @Getter
 public class EssayResponsePageWrapper
 {
-	private static String sZoneId = "Europe/Moscow";
+	private static ZoneId sZoneId = ZoneId.of("Europe/Moscow");
 	private EssayResponsePageWrapper() {}
 	public static EssayResponsePage of(Page<Essay> page, ZoneId zoneId)
 	{
 		if (page == null) return null;
-		if (zoneId == null) zoneId = ZoneId.of(sZoneId);
+		if (zoneId == null) zoneId = sZoneId;
 		return EssayResponsePage.builder()
 				.essayResponseList(getEssayResponseList(page, zoneId))
 				.pageNumber(page.getNumber())

@@ -2,6 +2,7 @@ package com.espub.unit.service;
 
 import static org.mockito.Mockito.when;
 
+import java.time.ZoneId;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -57,7 +58,7 @@ public class EssayEditorServiceTest
 	void setAuthentication() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
 	{
 		authentication = SecurityContextHolder.getContext().getAuthentication();
-		ReflectionTestUtils.setField(essayEditorService, "zoneId", "Europe/Moscow");
+		ReflectionTestUtils.setField(essayEditorService, "zoneId", ZoneId.of("Europe/Moscow"));
 	}
 	
 	@Test

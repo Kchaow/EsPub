@@ -1,18 +1,15 @@
 package com.espub.model;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -20,19 +17,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode
-public class Essay
+public class History 
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String content;
-	private ZonedDateTime publicationDate;
+	private ZonedDateTime lastViewDate;
+	private ZonedDateTime lastValidViewDate;
 	@ManyToOne
 	private User user;
-	private ZonedDateTime modificationDate;
-	@ManyToMany
-	private List<Category> category;
-	@Builder.Default
-	private Integer views = 0;
+	@ManyToOne
+	private Essay essay;
 }
