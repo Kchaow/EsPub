@@ -9,10 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EssayPageSort 
 {
-	TIME(Sort.by(Sort.Direction.DESC, "modificationDate"))
-	//VIEWS(Sort.by(Sort.Direction.DESC, "views")), TODO
-	//TIME_AND_VIEWS(Sort.by(Sort.Direction.DESC, "views" ,"modificationDate")), TODO
-	;
+	TIME(Sort.by(Sort.Direction.DESC, "modificationDate")),
+	VIEWS(Sort.by(Sort.Direction.DESC, "views")), //no test
+	TIME_AND_VIEWS(Sort.by(Sort.Direction.DESC, "views" ,"modificationDate")); //no test
 	
 	private final Sort sortValue;
 }
